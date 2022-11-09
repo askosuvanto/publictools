@@ -103,34 +103,42 @@ void ASpawnerToolBase::SpawnActor(FVector SpawnLocation, FRotator SpawnRotation,
 
 	if (World != nullptr)
 	{
-		TSubclassOf<AActor> ActorTypeToSpawn = SpawnableActors[SpawnIndex];
-
-		if (ActorTypeToSpawn != nullptr)
+		if (SpawnableActors.Num() > 0)
 		{
-			//Set Spawn Collision Handling Override
-			FActorSpawnParameters ActorSpawnParams;
-			ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+			TSubclassOf<AActor> ActorTypeToSpawn = SpawnableActors[SpawnIndex];
 
-			// Spawn a new actor and save it's pointer if succesful so we know when it is destroyed
-			AActor* NewActor;
-			NewActor = World->SpawnActor<AActor>(ActorTypeToSpawn, SpawnLocation, SpawnRotation, ActorSpawnParams);
-
-			if (NewActor != nullptr)
+			if (ActorTypeToSpawn != nullptr)
 			{
-				CurrentlySpawnedActors.AddUnique(NewActor);
+				//Set Spawn Collision Handling Override
+				FActorSpawnParameters ActorSpawnParams;
+				ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+				// Spawn a new actor and save it's pointer if succesful so we know when it is destroyed
+				AActor* NewActor;
+				NewActor = World->SpawnActor<AActor>(ActorTypeToSpawn, SpawnLocation, SpawnRotation, ActorSpawnParams);
+
+				if (NewActor != nullptr)
+				{
+					CurrentlySpawnedActors.AddUnique(NewActor);
+				}
+
+				// Spawn a visual effect if SpawningFX is set
+				if (SpawningFX != nullptr)
+				{
+					UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, SpawningFX, GetActorLocation(), GetActorRotation());
+				}
+
+				// Spawn a sound if SpawningSound is set
+				if (SpawningSound != nullptr)
+				{
+					UGameplayStatics::PlaySoundAtLocation(this, SpawningSound, GetActorLocation());
+				} 
 			}
-
-			// Spawn a visual effect if SpawningFX is set
-			if (SpawningFX != nullptr)
-			{
-				UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, SpawningFX, GetActorLocation(), GetActorRotation());
-			}
-
-			// Spawn a sound if SpawningSound is set
-			if (SpawningSound != nullptr)
-			{
-				UGameplayStatics::PlaySoundAtLocation(this, SpawningSound, GetActorLocation());
-			} 
+		}
+		else
+		{
+			// ERROR no spawnable actors found
+			GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("No spawnable actors found!"));
 		}
 	}
 }
