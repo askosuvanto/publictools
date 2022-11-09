@@ -1,0 +1,3 @@
+This is a general spawning tool for Unreal Engine 5.
+
+Note that the tool uses Niagara, so you might have to add Niagara to the dependencies in your .Build.cs.
