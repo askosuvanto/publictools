@@ -1,18 +1,18 @@
 /**
  * MIT License
- * 
+ *
  * Copyright (c) 2022 Asko Suvanto
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -34,7 +34,7 @@
 // Sets default values
 ASpawnerToolBase::ASpawnerToolBase()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
@@ -50,6 +50,18 @@ ASpawnerToolBase::ASpawnerToolBase()
 	SpawningArea->SetBoxExtent(FVector(100.0f, 100.0f, 100.0f));
 	SpawningArea->SetGenerateOverlapEvents(false);
 	SpawningArea->SetupAttachment(RootComponent);
+}
+
+// Called when the game starts or when spawned
+void ASpawnerToolBase::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (bSpawnActorsInArray)
+	{
+		SpawnActorsInArray();
+		bIsActive = false;
+	}
 }
 
 // Called every frame
@@ -111,7 +123,7 @@ void ASpawnerToolBase::SpawnActor(FVector SpawnLocation, FRotator SpawnRotation,
 			{
 				//Set Spawn Collision Handling Override
 				FActorSpawnParameters ActorSpawnParams;
-				ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+				ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
 
 				// Spawn a new actor and save it's pointer if succesful so we know when it is destroyed
 				AActor* NewActor;
@@ -132,7 +144,7 @@ void ASpawnerToolBase::SpawnActor(FVector SpawnLocation, FRotator SpawnRotation,
 				if (SpawningSound != nullptr)
 				{
 					UGameplayStatics::PlaySoundAtLocation(this, SpawningSound, GetActorLocation());
-				} 
+				}
 			}
 		}
 		else
@@ -234,4 +246,39 @@ bool ASpawnerToolBase::CleanCurrentlySpawnedActors()
 	}
 
 	return ReturnValue;
+}
+
+void ASpawnerToolBase::SpawnActorsInArray()
+{
+	FVector Spacing;
+	Spacing.X = SpawningArea->GetLocalBounds().BoxExtent.X - SpacingInArray;
+	Spacing.Y = -SpawningArea->GetLocalBounds().BoxExtent.Y;
+	Spacing.Z = SpawningArea->GetLocalBounds().BoxExtent.Z - SpacingInArray;
+
+	for (int i = 0; i < HowManyToSpawn; i++)
+	{
+		if (Spacing.Y > SpawningArea->GetLocalBounds().BoxExtent.Y - SpacingInArray)
+		{
+			Spacing.X -= SpacingInArray;
+			Spacing.Y = -SpawningArea->GetLocalBounds().BoxExtent.Y + SpacingInArray;
+		}
+		else
+		{
+			Spacing.Y += SpacingInArray;
+		}
+
+		if (Spacing.X < -SpawningArea->GetLocalBounds().BoxExtent.X + SpacingInArray)
+		{
+			Spacing.Z -= SpacingInArray;
+			Spacing.X = SpawningArea->GetLocalBounds().BoxExtent.X - SpacingInArray;
+		}
+
+		if (Spacing.Z < -SpawningArea->GetLocalBounds().BoxExtent.Z + SpacingInArray)
+		{
+			break;
+		}
+
+		GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Yellow, FString::FromInt(HowManyToSpawn - CurrentlySpawnedActors.Num()));
+		SpawnActor(GetSpawnLocation() + Spacing, GetSpawnRotation(), GetSpawnableActorIndex());
+	}
 }

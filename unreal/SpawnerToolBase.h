@@ -1,18 +1,18 @@
 /**
  * MIT License
- * 
+ *
  * Copyright (c) 2022 Asko Suvanto
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -35,15 +35,19 @@ class UArrowComponent;
 class UBoxComponent;
 
 UCLASS()
-class TOPDOWNSCROLLER_API ASpawnerToolBase : public AActor
+class SPACEINVADERS_API ASpawnerToolBase : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	ASpawnerToolBase();
 
-public:	
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -87,6 +91,14 @@ public:
 	/** Spawn the actors from Spawnable Actors in numeric order or in random order */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning")
 	bool bSpawnActorsInOrder = true;
+
+	/** Spawn actors in an array within bounds of the spawnier tool until maximum number of actors have been spawned */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning")
+	bool bSpawnActorsInArray = false;
+
+	/** How much is the space between each spawned actor when spawning actors in array */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning")
+	float SpacingInArray = 10.0f;
 
 	/** The maximum amout of actors this spawner can spawn */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning", meta = (UIMin = 1))
@@ -133,6 +145,9 @@ private:
 	/** Check if any saved actors have been or are being destroyed and remove them from the array */
 	bool CleanCurrentlySpawnedActors();
 
+	/** Spawn actors in an array going from left to right, up to down and front to back as long as actors can be spawned within the bounds */
+	void SpawnActorsInArray();
+
 	/** How much time is left until next spawning */
 	float CurrentSpawningTimer = 0.0f;
 
@@ -144,5 +159,5 @@ private:
 
 	/** Can an actor be spawned now or are we waiting until the next spawning */
 	bool bCanSpawn = false;
-
 };
+
