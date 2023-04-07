@@ -62,6 +62,8 @@ void ASpawnerToolBase::BeginPlay()
 		SpawnActorsInArray();
 		bIsActive = false;
 	}
+
+	CurrentSpawningTimer = TimeBetweenSpawnings;
 }
 
 // Called every frame
@@ -101,8 +103,16 @@ void ASpawnerToolBase::Tick(float DeltaTime)
 			}
 			else
 			{
+				if (bRandomTimeBetweenSpawnings)
+				{
+					CurrentSpawningTimer = FMath::RandRange(MinTimeBetweenSpawnings, MaxTimeBetweenSpawnings);
+				}
+				else
+				{
+					CurrentSpawningTimer = TimeBetweenSpawnings;
+				}
+
 				bCanSpawn = true;
-				CurrentSpawningTimer = TimeBetweenSpawnings;
 			}
 		}
 	}
@@ -121,7 +131,7 @@ void ASpawnerToolBase::SpawnActor(FVector SpawnLocation, FRotator SpawnRotation,
 
 			if (ActorTypeToSpawn != nullptr)
 			{
-				//Set Spawn Collision Handling Override
+				// Set Spawn Collision Handling Override
 				FActorSpawnParameters ActorSpawnParams;
 				ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
 
@@ -248,6 +258,7 @@ bool ASpawnerToolBase::CleanCurrentlySpawnedActors()
 	return ReturnValue;
 }
 
+// Spawn actors first along the Y-axis, then the X-axis and finally along the Z-axis
 void ASpawnerToolBase::SpawnActorsInArray()
 {
 	FVector Spacing;
@@ -278,7 +289,6 @@ void ASpawnerToolBase::SpawnActorsInArray()
 			break;
 		}
 
-		GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Yellow, FString::FromInt(HowManyToSpawn - CurrentlySpawnedActors.Num()));
 		SpawnActor(GetSpawnLocation() + Spacing, GetSpawnRotation(), GetSpawnableActorIndex());
 	}
 }

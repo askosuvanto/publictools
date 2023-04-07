@@ -108,6 +108,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning", meta = (UIMin = 0.0f))
 	float TimeBetweenSpawnings = 1.0f;
 
+	/** Make the spawner wait a random time between min and max values before spawning */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning")
+	bool bRandomTimeBetweenSpawnings = false;
+
+	/** Min value for the random wait */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning", meta = (UMin = 0.0f))
+	float MinTimeBetweenSpawnings = 1.0f;
+
+	/** Max value for the random wait */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning")
+	float MaxTimeBetweenSpawnings = 2.0f;
+
 	/** Array of spawnable actor classes */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning")
 	TArray<TSubclassOf<AActor>> SpawnableActors;
