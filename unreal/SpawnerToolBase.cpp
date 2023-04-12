@@ -219,7 +219,7 @@ int ASpawnerToolBase::GetSpawnableActorIndex()
 
 		CurrentSpawningIndex++;
 
-		if (CurrentSpawningIndex <= SpawnableActors.Num())
+		if (CurrentSpawningIndex >= SpawnableActors.Num())
 		{
 			CurrentSpawningIndex = 0;
 		}
