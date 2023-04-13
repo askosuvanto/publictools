@@ -63,7 +63,14 @@ void ASpawnerToolBase::BeginPlay()
 		bIsActive = false;
 	}
 
-	CurrentSpawningTimer = TimeBetweenSpawnings;
+	if (bRandomTimeBetweenSpawnings)
+	{
+		CurrentSpawningTimer = FMath::RandRange(MinTimeBetweenSpawnings, MaxTimeBetweenSpawnings);
+	}
+	else
+	{
+		CurrentSpawningTimer = TimeBetweenSpawnings;
+	}
 }
 
 // Called every frame
